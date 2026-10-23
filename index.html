@@ -146,7 +146,6 @@ button {
     cursor: pointer; transition: 0.2s;
 }
 button:hover { background: #0f172a; }
-button.whatsapp { background: #25D366; }
 button:disabled { opacity: .6; cursor: wait; }
 
 .batch-box { background: #f1f5f9; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 8px; margin-top: 10px; }
@@ -246,8 +245,6 @@ button:disabled { opacity: .6; cursor: wait; }
 
         <div class="buttons" style="margin-top: 10px;">
             <button type="button" id="downloadBtn">⬇️ Download Single Image</button>
-            <!-- Renamed button to "Share Image" -->
-            <button type="button" id="shareBtn" style="background: #0463c9;">📤 Share Image</button>
         </div>
 
         <p id="status" role="status"></p>
@@ -262,8 +259,6 @@ button:disabled { opacity: .6; cursor: wait; }
             </div>
             <div class="buttons">
                 <button type="button" id="downloadAllBtn" style="background: #8b5a2b;">⬇️ Auto-Save All</button>
-                <!-- Renamed button to "Share All" -->
-                <button type="button" id="shareAllBtn" style="background: #0463c9;">📤 Share All</button>
             </div>
         </div>
     </section>
@@ -292,9 +287,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
     const placeholder = document.getElementById('placeholder');
 
     const downloadBtn = document.getElementById('downloadBtn');
-    const shareBtn = document.getElementById('shareBtn');
     const downloadAllBtn = document.getElementById('downloadAllBtn');
-    const shareAllBtn = document.getElementById('shareAllBtn');
     const status = document.getElementById('status');
 
     let currentImageSrc = null;
@@ -412,7 +405,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         setTimeout(() => URL.revokeObjectURL(url), 1500);
     }
 
-    // 4. Single Download & Share (FIXED NATIVE SHARE)
+    // 4. Single Download
     downloadBtn.addEventListener('click', async () => {
         if (!currentImageSrc) return showStatus('Please upload a file first.');
         const name = guestNameInput.value.trim();
@@ -433,36 +426,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         }
     });
 
-    shareBtn.addEventListener('click', async () => {
-        if (!currentImageSrc) return showStatus('Please upload a file first.');
-        const name = guestNameInput.value.trim();
-        if (!name) return showStatus('Please enter a guest name.');
-
-        shareBtn.disabled = true;
-        shareBtn.textContent = '⏳ Preparing...';
-        try {
-            const blob = await generateBlob(name);
-            const file = new File([blob], `Invitation-${name}.png`, { type: 'image/png' });
-
-            // NATIVE SHARE (Opens your phone's actual share menu)
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: 'Invitation' });
-                showStatus('Shared successfully!', false);
-            } else {
-                // Fallback for computers
-                saveBlob(blob, `Invitation-${name}.png`);
-                showStatus('Sharing not supported on this device. Image downloaded instead.', false);
-            }
-        } catch (err) {
-            if (err.name !== 'AbortError') showStatus('Sharing failed.');
-        } finally {
-            shareBtn.disabled = false;
-            shareBtn.textContent = '📤 Share Image';
-            updatePreview(guestNameInput.value);
-        }
-    });
-
-    // 5. Batch Process (FIXED NATIVE SHARE ALL)
+    // 5. Batch Process (Auto-Save All)
     downloadAllBtn.addEventListener('click', async () => {
         const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
         if (!currentImageSrc) return showStatus('Please upload a file first.');
@@ -474,6 +438,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
                 downloadAllBtn.textContent = `⏳ Saving ${i + 1}/${names.length}...`;
                 const blob = await generateBlob(names[i]);
                 saveBlob(blob, `Invitation-${names[i].replace(/[^a-z0-9]/gi, '-')}.png`);
+                // Wait 1 second before downloading the next so the browser doesn't block it
                 await new Promise(r => setTimeout(r, 1000));
             }
             showStatus(`✅ Saved ${names.length} images!`, false);
@@ -482,38 +447,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         } finally {
             downloadAllBtn.disabled = false;
             downloadAllBtn.textContent = '⬇️ Auto-Save All';
-            updatePreview(guestNameInput.value);
-        }
-    });
-
-    shareAllBtn.addEventListener('click', async () => {
-        const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
-        if (!currentImageSrc) return showStatus('Please upload a file first.');
-        if (names.length === 0) return showStatus('Please paste at least one name.');
-        if (names.length > 15) return showStatus('Max 15 names for sharing.');
-
-        shareAllBtn.disabled = true;
-        try {
-            const files = [];
-            for (let i = 0; i < names.length; i++) {
-                shareAllBtn.textContent = `⏳ Rendering ${i + 1}/${names.length}...`;
-                const blob = await generateBlob(names[i]);
-                files.push(new File([blob], `Invitation-${i}.png`, { type: 'image/png' }));
-            }
-            shareAllBtn.textContent = `📤 Opening Share...`;
-            
-            // NATIVE SHARE (Opens your phone's actual share menu)
-            if (navigator.canShare && navigator.canShare({ files: files })) {
-                await navigator.share({ files: files, title: 'Invitations' });
-                showStatus('Shared successfully!', false);
-            } else {
-                showStatus('Your phone does not support sharing multiple images.', true);
-            }
-        } catch (err) {
-            if (err.name !== 'AbortError') showStatus('Sharing failed.');
-        } finally {
-            shareAllBtn.disabled = false;
-            shareAllBtn.textContent = '📤 Share All';
             updatePreview(guestNameInput.value);
         }
     });
