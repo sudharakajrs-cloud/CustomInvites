@@ -1,2 +1,2 @@
-# Event-Invitation-Creator
+# CustomInvites
 Create beautiful personalized invitations in seconds
