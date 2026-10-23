@@ -2,332 +2,204 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Event Invitation Creator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Invitation Creator</title>
 
 <!-- Load Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Great+Vibes&family=Playfair+Display:wght@600&family=Parisienne&family=Dancing+Script:wght@600&family=Alex+Brush&family=Tangerine:wght@700&family=Cinzel:wght@600&family=Lora:ital,wght@0,600;1,600&family=Montserrat:wght@500&family=Sacramento&family=Pinyon+Script&family=Crimson+Text:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<!-- Load html2canvas (For generating images) -->
+<!-- Load html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<!-- Load PDF.js (For reading PDFs) -->
+<!-- Load PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
 <style>
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
     min-height: 100vh;
     font-family: 'Poppins', Arial, sans-serif;
     background: #0f172a;
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-x: hidden;
     color: #333;
 }
 
-/* ==================== ANIMATED BACKGROUND (FROM YOUR LOGIN PAGE) ==================== */
+/* ==================== ANIMATED BACKGROUND ==================== */
 .animated-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
 }
 .animated-bg::before {
-    content: "";
-    position: absolute;
-    inset: -50%;
+    content: ""; position: absolute; inset: -50%;
     background: linear-gradient(135deg, #0463c9, #09a7e6, #6a5acd, #fc4964, #f59e0b, #10b981, #0463c9);
-    background-size: 400% 400%;
-    animation: gradientShift 18s ease infinite;
-    opacity: 0.9;
+    background-size: 400% 400%; animation: gradientShift 18s ease infinite; opacity: 0.9;
 }
 @keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
 }
 .animated-bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
+    content: ""; position: absolute; inset: 0;
     background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.10) 0%, rgba(15, 23, 42, 0.55) 100%);
 }
 .animated-bg .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.55;
-    animation: floatBlob 20s ease-in-out infinite;
-    will-change: transform;
+    position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.55;
+    animation: floatBlob 20s ease-in-out infinite; will-change: transform;
 }
-.animated-bg .blob.b1 { width: 480px; height: 480px; background: radial-gradient(circle, #09a7e6, transparent 70%); top: -180px; left: -160px; animation-duration: 22s; }
-.animated-bg .blob.b2 { width: 420px; height: 420px; background: radial-gradient(circle, #fc4964, transparent 70%); bottom: -160px; right: -140px; animation-duration: 26s; animation-delay: -5s; }
-.animated-bg .blob.b3 { width: 360px; height: 360px; background: radial-gradient(circle, #10b981, transparent 70%); top: 40%; left: 55%; animation-duration: 30s; animation-delay: -10s; }
-.animated-bg .blob.b4 { width: 320px; height: 320px; background: radial-gradient(circle, #f59e0b, transparent 70%); top: 15%; left: 25%; animation-duration: 24s; animation-delay: -8s; }
+.animated-bg .b1 { width: 480px; height: 480px; background: radial-gradient(circle, #09a7e6, transparent 70%); top: -180px; left: -160px; animation-duration: 22s; }
+.animated-bg .b2 { width: 420px; height: 420px; background: radial-gradient(circle, #fc4964, transparent 70%); bottom: -160px; right: -140px; animation-duration: 26s; animation-delay: -5s; }
 @keyframes floatBlob {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    25%      { transform: translate(50px, -40px) scale(1.08); }
-    50%      { transform: translate(-30px, 50px) scale(0.94); }
-    75%      { transform: translate(40px, 30px) scale(1.05); }
-}
-.animated-bg .ripple {
-    position: absolute;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-    animation: rippleExpand ease-out infinite;
-    will-change: transform, opacity;
-}
-@keyframes rippleExpand {
-    0%   { transform: scale(0.1); opacity: 0; }
-    10%  { opacity: 0.9; }
-    100% { transform: scale(4); opacity: 0; }
-}
-.animated-bg .ripple.r-1 { left: 8%; top: 22%; width: 60px; height: 60px; animation-duration: 6s; animation-delay: 0s; }
-.animated-bg .ripple.r-2 { left: 22%; top: 65%; width: 80px; height: 80px; animation-duration: 7s; animation-delay: 1.5s; }
-.animated-bg .ripple.r-3 { left: 38%; top: 35%; width: 70px; height: 70px; animation-duration: 6.5s; animation-delay: 3s; }
-.animated-bg .ripple.r-4 { left: 52%; top: 78%; width: 90px; height: 90px; animation-duration: 8s; animation-delay: 2s; }
-.animated-bg .ripple.r-5 { left: 68%; top: 18%; width: 65px; height: 65px; animation-duration: 6s; animation-delay: 4.5s; }
-.animated-bg .ripple.r-6 { left: 82%; top: 55%; width: 75px; height: 75px; animation-duration: 7.5s; animation-delay: 0.5s; }
-.animated-bg .ripple.r-7 { left: 92%; top: 30%; width: 55px; height: 55px; animation-duration: 5.5s; animation-delay: 5s; }
-.animated-bg .ripple.r-8 { left: 15%; top: 88%; width: 70px; height: 70px; animation-duration: 7s; animation-delay: 6s; }
-
-/* Content positioning */
-.header, .app-container, .footer {
-    position: relative;
-    z-index: 1;
+    25% { transform: translate(50px, -40px) scale(1.08); }
+    50% { transform: translate(-30px, 50px) scale(0.94); }
+    75% { transform: translate(40px, 30px) scale(1.05); }
 }
 
-/* HEADER DESIGN */
-.header {
-    text-align: center;
-    margin-bottom: 30px;
+/* ==================== LAYOUT ==================== */
+.app-wrapper {
+    position: relative; z-index: 1; display: flex; flex-direction: column;
+    max-width: 1100px; width: 100%; margin: 0 auto; padding: 20px;
 }
+
+.header { text-align: center; margin-bottom: 20px; }
 .header h1 {
-    font-family: 'Great Vibes', cursive;
-    font-size: 56px;
-    color: #ffffff;
-    margin: 0 0 5px 0;
-    font-weight: normal;
-    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-.header p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-family: 'Great Vibes', cursive; font-size: 42px; color: #ffffff;
+    margin: 0 0 5px 0; font-weight: normal; text-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* MAIN CONTAINER (GLASS EFFECT) */
-.app-container {
-    display: flex;
-    gap: 30px;
-    max-width: 1100px;
-    width: 100%;
-    margin: 0 auto 30px auto;
-    padding: 30px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255,255,255,0.9) inset;
-    border: 1px solid rgba(255,255,255,0.4);
+/* ==================== PREVIEW (STICKY ON MOBILE) ==================== */
+.preview-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px); border-radius: 16px; padding: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px;
+    display: flex; justify-content: center;
+    position: sticky; top: 10px; z-index: 50;
+}
+.card-wrapper {
+    position: relative; width: 100%; max-width: 300px; 
+    overflow: hidden; background: white; border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.card-wrapper img { display: block; width: 100%; height: auto; }
+.name-overlay {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    max-width: 95%; display: none; text-align: center; white-space: nowrap;
+    line-height: 1.2; font-family: 'Cormorant Garamond', serif; font-weight: 600;
+    color: #3a2c24; text-shadow: 0 0 6px rgba(255,255,255,.9); pointer-events: none;
 }
 
-.editor-panel, .preview-panel { flex: 1; min-width: 0; }
-.editor-panel { display: flex; flex-direction: column; gap: 15px; }
-
-h2 {
-    margin: 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(0,0,0,0.05);
-    color: #1e293b;
-    font-size: 20px;
+/* ==================== EDITOR PANEL ==================== */
+.editor-panel {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+    border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column; gap: 15px;
 }
 
+h2 { margin: 0; padding-bottom: 10px; border-bottom: 2px solid #eee; color: #1e293b; font-size: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 label { font-size: 13px; font-weight: 600; color: #475569; }
 
 input[type="text"], select, textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 15px;
-    background: #ffffff;
-    font-family: inherit;
-    transition: 0.2s;
+    width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+    font-size: 16px; background: #f8fafc; font-family: inherit;
 }
-input[type="text"]:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #0463c9;
-    box-shadow: 0 0 0 3px rgba(4,99,201,0.15);
-}
+input[type="text"]:focus, select:focus, textarea:focus { outline: none; border-color: #0463c9; background: #fff; }
 
-textarea { resize: vertical; min-height: 100px; }
+textarea { resize: vertical; min-height: 80px; }
+input[type="range"] { width: 100%; cursor: pointer; accent-color: #0463c9; height: 30px; }
+input[type="color"] { width: 100%; height: 45px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; background: #fff;}
 
-input[type="range"] { width: 100%; cursor: pointer; accent-color: #0463c9; }
-input[type="color"] { width: 100%; height: 40px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; background: #fff;}
-
-.row { display: flex; gap: 15px; }
+.row { display: flex; gap: 10px; }
 .row .form-group { flex: 1; min-width: 0; }
 .value { color: #0463c9; font-weight: bold; }
 
-.buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    background: #1e293b;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-}
-button:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-button.whatsapp { background: #25D366; }
-button.whatsapp:hover { background: #1da851; }
-button:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; }
-
-.batch-box {
-    background: rgba(248, 250, 252, 0.6);
-    border: 1px dashed #94a3b8;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-.batch-box h3 { margin: 0 0 10px 0; font-size: 16px; color: #0463c9; }
-
 .upload-box {
-    border: 2px dashed #94a3b8;
-    padding: 15px;
-    text-align: center;
-    border-radius: 8px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.5);
-    transition: 0.2s;
-    color: #475569;
+    border: 2px dashed #94a3b8; padding: 20px; text-align: center; border-radius: 8px;
+    cursor: pointer; background: #f8fafc; transition: 0.2s; color: #475569; display: block;
 }
-.upload-box:hover { border-color: #0463c9; background: rgba(255, 255, 255, 0.9); color: #0463c9; }
+.upload-box:hover { border-color: #0463c9; background: #fff; color: #0463c9; }
 .upload-box input[type="file"] { display: none; }
 
-.preview-panel {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-    border: 1px dashed #94a3b8;
-    border-radius: 12px;
-    background: rgba(248, 250, 252, 0.7);
-    overflow: hidden; 
+.buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+button {
+    width: 100%; padding: 15px; border: none; border-radius: 8px;
+    background: #1e293b; color: white; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: 0.2s;
 }
+button:hover { background: #0f172a; }
+button.whatsapp { background: #25D366; }
+button:disabled { opacity: .6; cursor: wait; }
 
-.card-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 450px; 
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 10px 30px rgba(0,0,0,.2);
-    border-radius: 8px;
-}
+.batch-box { background: #f1f5f9; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 8px; margin-top: 10px; }
+.batch-box h3 { margin: 0 0 10px 0; font-size: 16px; color: #0463c9; }
 
-.card-wrapper img { display: block; width: 100%; height: auto; object-fit: contain; }
+#status { margin: 0; font-size: 14px; text-align: center; color: #b42318; font-weight: bold; min-height: 20px; }
+.footer { text-align: center; padding: 20px 0; color: rgba(255,255,255,0.8); font-size: 13px; letter-spacing: 1px; }
 
-.name-overlay {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 95%;
-    display: none;
-    text-align: center;
-    white-space: nowrap;
-    line-height: 1.2;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 600;
-    color: #3a2c24;
-    text-shadow: 0 0 6px rgba(255,255,255,.9);
-    pointer-events: none;
-}
-
-#status { margin: 0; font-size: 14px; text-align: center; color: #1e293b; font-weight: bold; }
-#status.error { color: #b42318; }
-
-/* FOOTER DESIGN */
-.footer {
-    text-align: center;
-    margin-top: auto;
-    padding: 20px 0;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-    letter-spacing: 1px;
-    font-weight: 500;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-@media (max-width: 800px) {
-    .app-container { flex-direction: column; padding: 20px; }
-    .preview-panel { order: -1; padding: 15px; }
-    .header h1 { font-size: 42px; }
+/* ==================== DESKTOP (SIDE BY SIDE) ==================== */
+@media (min-width: 800px) {
+    .app-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+    .header { grid-column: 1 / -1; margin-bottom: 0; }
+    .preview-panel { position: static; grid-column: 2; grid-row: 2; padding: 30px; }
+    .card-wrapper { max-width: 100%; }
+    .editor-panel { grid-column: 1; grid-row: 2; }
+    .footer { grid-column: 1 / -1; }
 }
 </style>
 </head>
-
 <body>
 
-<!-- ANIMATED BACKGROUND -->
-<div class="animated-bg" aria-hidden="true">
+<div class="animated-bg">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
-    <div class="blob b3"></div>
-    <div class="blob b4"></div>
-    <div class="ripple r-1"></div>
-    <div class="ripple r-2"></div>
-    <div class="ripple r-3"></div>
-    <div class="ripple r-4"></div>
-    <div class="ripple r-5"></div>
-    <div class="ripple r-6"></div>
-    <div class="ripple r-7"></div>
-    <div class="ripple r-8"></div>
 </div>
 
-<div class="header">
-    <h1>Event Invitation Creator</h1>
-    <p>Create beautiful personalized invitations in seconds</p>
-</div>
+<div class="app-wrapper">
+    
+    <div class="header">
+        <h1>Invitation Creator</h1>
+    </div>
 
-<main class="app-container">
+    <!-- STICKY PREVIEW (Mobile stays at top) -->
+    <section class="preview-panel">
+        <div class="card-wrapper" id="cardWrapper">
+            <img id="invitationImg" src="" alt="Upload file" style="display:none;">
+            <div id="placeholder" style="padding: 40px 10px; text-align: center; color: #888;">
+                <h3 style="margin:0 0 5px 0; font-size:16px;">No Image</h3>
+                <p style="margin:0; font-size:12px;">Upload a file below</p>
+            </div>
+            <div class="name-overlay" id="nameOverlay"></div>
+        </div>
+    </section>
 
+    <!-- EDITOR -->
     <section class="editor-panel">
-
-        <h2>⚙️ Customize</h2>
+        <h2>⚙️ Design & Preview</h2>
 
         <div class="form-group">
             <label class="upload-box" for="imageUpload">
-                📁 <span style="font-weight:bold;">Upload PDF or Image (PNG/JPG)</span>
+                📁 <strong>Upload PDF or Image</strong>
                 <input type="file" id="imageUpload" accept="application/pdf, image/png, image/jpeg">
             </label>
         </div>
 
+        <div class="form-group">
+            <label>Preview Name</label>
+            <input type="text" id="guestName" value="Mr. & Mrs. Smith" placeholder="Type to preview" autocomplete="off">
+        </div>
+
         <div class="row">
             <div class="form-group">
-                <label for="posSlider">Pos <span class="value" id="posValue">41.5%</span></label>
+                <label>Pos <span class="value" id="posValue">41.5%</span></label>
                 <input type="range" id="posSlider" min="5" max="95" step="0.5" value="41.5">
             </div>
             <div class="form-group">
-                <label for="sizeSlider">Size <span class="value" id="sizeValue">5%</span></label>
+                <label>Size <span class="value" id="sizeValue">5%</span></label>
                 <input type="range" id="sizeSlider" min="2" max="12" step="0.5" value="5">
             </div>
             <div class="form-group" style="flex: 0 0 60px;">
@@ -337,14 +209,14 @@ button:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; 
         </div>
 
         <div class="form-group">
-            <label for="fontSelect">Font Style</label>
+            <label>Font Style</label>
             <select id="fontSelect">
                 <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+                <option value="'Great Vibes', cursive">Great Vibes</option>
                 <option value="'Playfair Display', serif">Playfair Display</option>
                 <option value="'Cinzel', serif">Cinzel</option>
                 <option value="'Lora', serif">Lora</option>
                 <option value="'Crimson Text', serif">Crimson Text</option>
-                <option value="'Great Vibes', cursive">Great Vibes</option>
                 <option value="'Parisienne', cursive">Parisienne</option>
                 <option value="'Alex Brush', cursive">Alex Brush</option>
                 <option value="'Pinyon Script', cursive">Pinyon Script</option>
@@ -355,37 +227,32 @@ button:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; 
             </select>
         </div>
 
+        <div class="buttons" style="margin-top: 10px;">
+            <button type="button" id="downloadBtn">⬇️ Download Single Image</button>
+            <button type="button" class="whatsapp" id="shareBtn">📱 Share Single Image</button>
+        </div>
+
+        <p id="status" role="status"></p>
+
+        <!-- BATCH MODE -->
         <div class="batch-box">
-            <h3>✨ Batch Mode (Multiple Names)</h3>
+            <h3>✨ Batch Mode (Auto-Generate)</h3>
+            <p style="font-size: 12px; color: #555; margin-top: 0;">The designs above will be applied to all names below.</p>
             <div class="form-group">
                 <label>Paste Names (One per line)</label>
                 <textarea id="batchNames" placeholder="Mr. & Mrs. Smith&#10;Dr. John Doe&#10;The Johnson Family"></textarea>
             </div>
             <div class="buttons">
-                <button type="button" id="downloadAllBtn" style="background: #8b5a2b;">⬇️ Auto-Save All Images</button>
-                <button type="button" class="whatsapp" id="shareAllBtn" style="background: #128C7E;">📱 Share All to WhatsApp</button>
+                <button type="button" id="downloadAllBtn" style="background: #8b5a2b;">⬇️ Auto-Save All</button>
+                <button type="button" class="whatsapp" id="shareAllBtn" style="background: #128C7E;">📱 Share All</button>
             </div>
-        </div>
-
-        <p id="status" role="status">Upload a file to start.</p>
-    </section>
-
-    <section class="preview-panel">
-        <div class="card-wrapper" id="cardWrapper">
-            <img id="invitationImg" src="" alt="Please upload a file" style="display:none;">
-            <div id="placeholder" style="padding: 50px 20px; text-align: center; color: #888;">
-                <h3>No File Uploaded</h3>
-                <p>Upload a PDF or Image to see the preview.</p>
-            </div>
-            <div class="name-overlay" id="nameOverlay"></div>
         </div>
     </section>
 
-</main>
-
-<footer class="footer">
-    Developed by JRS
-</footer>
+    <footer class="footer">
+        Developed by JRS
+    </footer>
+</div>
 
 <script>
 // Set PDF.js worker path
@@ -393,6 +260,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 (() => {
     const imageUploadInput = document.getElementById('imageUpload');
+    const guestNameInput = document.getElementById('guestName');
     const posSlider = document.getElementById('posSlider');
     const sizeSlider = document.getElementById('sizeSlider');
     const colorPicker = document.getElementById('colorPicker');
@@ -404,15 +272,18 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
     const invitationImg = document.getElementById('invitationImg');
     const placeholder = document.getElementById('placeholder');
 
+    const downloadBtn = document.getElementById('downloadBtn');
+    const shareBtn = document.getElementById('shareBtn');
     const downloadAllBtn = document.getElementById('downloadAllBtn');
     const shareAllBtn = document.getElementById('shareAllBtn');
     const status = document.getElementById('status');
 
     let currentImageSrc = null;
 
-    function showStatus(message, error = false) {
+    function showStatus(message, error = true) {
         status.textContent = message;
-        status.classList.toggle('error', error);
+        status.style.color = error ? '#b42318' : '#10b981';
+        setTimeout(() => { if(status.textContent === message) status.textContent = ''; }, 4000);
     }
 
     // 1. Upload & PDF Conversion
@@ -422,33 +293,25 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(event) {
-                loadImage(event.target.result);
-            };
+            reader.onload = function(event) { loadImage(event.target.result); };
             reader.readAsDataURL(file);
         } 
         else if (file.type === 'application/pdf') {
-            showStatus('Converting PDF... Please wait.');
+            showStatus('Converting PDF... Please wait.', false);
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 const page = await pdf.getPage(1); 
-
                 const viewport = page.getViewport({ scale: 2.0 }); 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
-
-                const renderContext = { canvasContext: context, viewport: viewport };
-                await page.render(renderContext).promise;
-                
-                const dataUrl = canvas.toDataURL('image/png');
-                loadImage(dataUrl);
-                showStatus('PDF converted successfully!');
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                loadImage(canvas.toDataURL('image/png'));
+                showStatus('PDF converted!', false);
             } catch (err) {
-                console.error(err);
-                showStatus('Error reading PDF. Please try an image.', true);
+                showStatus('Error reading PDF. Try an image.', true);
             }
         }
     });
@@ -458,11 +321,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         invitationImg.src = currentImageSrc;
         invitationImg.style.display = 'block';
         placeholder.style.display = 'none';
-        updatePreview(batchNamesInput.value.split('\n')[0]);
+        updatePreview(guestNameInput.value);
     }
 
-    // 2. Update Preview
-    function updatePreview(nameToDisplay = "") {
+    // 2. Update Preview (Applies the design)
+    function updatePreview(nameToDisplay) {
         document.getElementById('posValue').textContent = posSlider.value + '%';
         document.getElementById('sizeValue').textContent = sizeSlider.value + '%';
 
@@ -470,19 +333,19 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         nameOverlay.style.color = colorPicker.value;
         nameOverlay.style.fontFamily = fontSelect.value;
 
-        if (!nameToDisplay) {
+        if (!nameToDisplay || !nameToDisplay.trim()) {
             nameOverlay.style.display = 'none';
             return;
         }
 
-        nameOverlay.textContent = nameToDisplay;
+        nameOverlay.textContent = nameToDisplay.trim().toUpperCase();
         nameOverlay.style.display = 'block';
 
         const cardWidth = cardWrapper.clientWidth;
         if (!cardWidth) return;
 
         let fontSize = Math.max(10, cardWidth * Number(sizeSlider.value) / 100);
-        const maxWidth = cardWrapper.clientWidth * 0.88;
+        const maxWidth = cardWidth * 0.88;
 
         nameOverlay.style.fontSize = fontSize + 'px';
 
@@ -494,19 +357,23 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         }
     }
 
-    posSlider.addEventListener('input', () => updatePreview(batchNamesInput.value.split('\n')[0]));
-    sizeSlider.addEventListener('input', () => updatePreview(batchNamesInput.value.split('\n')[0]));
-    colorPicker.addEventListener('input', () => updatePreview(batchNamesInput.value.split('\n')[0]));
-    fontSelect.addEventListener('change', () => updatePreview(batchNamesInput.value.split('\n')[0]));
-    batchNamesInput.addEventListener('input', () => updatePreview(batchNamesInput.value.split('\n')[0]));
+    guestNameInput.addEventListener('input', () => updatePreview(guestNameInput.value));
+    posSlider.addEventListener('input', () => updatePreview(guestNameInput.value));
+    sizeSlider.addEventListener('input', () => updatePreview(guestNameInput.value));
+    colorPicker.addEventListener('input', () => updatePreview(guestNameInput.value));
+    fontSelect.addEventListener('change', () => updatePreview(guestNameInput.value));
+    
+    if (document.fonts) {
+        document.fonts.ready.then(() => updatePreview(guestNameInput.value));
+    }
 
-    // 3. Generate Image
+    // 3. Generate Image (Applies the exact current settings)
     async function generateBlob(name) {
-        updatePreview(name.toUpperCase());
-        await new Promise(r => setTimeout(r, 100)); 
+        updatePreview(name); // Force render the specific name
+        await new Promise(r => setTimeout(r, 150)); 
         
         const canvas = await html2canvas(cardWrapper, {
-            scale: 3,
+            scale: 3, 
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false
@@ -515,101 +382,122 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     }
 
-    // 4. Auto-Save All
+    function saveBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    // 4. Single Download & Share
+    downloadBtn.addEventListener('click', async () => {
+        if (!currentImageSrc) return showStatus('Please upload a file first.');
+        const name = guestNameInput.value.trim();
+        if (!name) return showStatus('Please enter a guest name.');
+
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = '⏳ Generating...';
+        try {
+            const blob = await generateBlob(name);
+            saveBlob(blob, `Invitation-${name.replace(/[^a-z0-9]/gi, '-')}.png`);
+            showStatus('Downloaded successfully!', false);
+        } catch (err) {
+            showStatus('Download failed.');
+        } finally {
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = '⬇️ Download Single Image';
+            updatePreview(guestNameInput.value);
+        }
+    });
+
+    shareBtn.addEventListener('click', async () => {
+        if (!currentImageSrc) return showStatus('Please upload a file first.');
+        const name = guestNameInput.value.trim();
+        if (!name) return showStatus('Please enter a guest name.');
+
+        shareBtn.disabled = true;
+        shareBtn.textContent = '⏳ Preparing...';
+        try {
+            const blob = await generateBlob(name);
+            const file = new File([blob], `Invitation-${name}.png`, { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Invitation' });
+                showStatus('Shared successfully!', false);
+            } else {
+                saveBlob(blob, `Invitation-${name}.png`);
+                showStatus('Sharing not supported. Image downloaded instead.', false);
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') showStatus('Sharing failed.');
+        } finally {
+            shareBtn.disabled = false;
+            shareBtn.textContent = '📱 Share Single Image';
+            updatePreview(guestNameInput.value);
+        }
+    });
+
+    // 5. Batch Process (Applies current design to all)
     downloadAllBtn.addEventListener('click', async () => {
         const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
-        
-        if (!currentImageSrc) return showStatus('Please upload a file first.', true);
-        if (names.length === 0) return showStatus('Please paste at least one name.', true);
+        if (!currentImageSrc) return showStatus('Please upload a file first.');
+        if (names.length === 0) return showStatus('Please paste at least one name.');
 
         downloadAllBtn.disabled = true;
-        shareAllBtn.disabled = true;
-
         try {
-            if (document.fonts) await document.fonts.ready;
-
             for (let i = 0; i < names.length; i++) {
-                const name = names[i];
-                downloadAllBtn.textContent = `⏳ Saving ${i + 1} of ${names.length}...`;
-                
-                const blob = await generateBlob(name);
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Invitation-${name.replace(/[^a-z0-9]/gi, '-')}.png`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-
-                await new Promise(r => setTimeout(r, 1500));
+                downloadAllBtn.textContent = `⏳ Saving ${i + 1}/${names.length}...`;
+                const blob = await generateBlob(names[i]);
+                saveBlob(blob, `Invitation-${names[i].replace(/[^a-z0-9]/gi, '-')}.png`);
+                await new Promise(r => setTimeout(r, 1000));
             }
-            
-            showStatus(`✅ Successfully saved ${names.length} images!`);
+            showStatus(`✅ Saved ${names.length} images!`, false);
         } catch (err) {
-            console.error(err);
-            showStatus('Error saving images.', true);
+            showStatus('Batch save failed.');
         } finally {
             downloadAllBtn.disabled = false;
-            shareAllBtn.disabled = false;
-            downloadAllBtn.textContent = '⬇️ Auto-Save All Images';
-            updatePreview(batchNamesInput.value.split('\n')[0]);
+            downloadAllBtn.textContent = '⬇️ Auto-Save All';
+            updatePreview(guestNameInput.value);
         }
     });
 
-    // 5. Share All
     shareAllBtn.addEventListener('click', async () => {
         const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
-        
-        if (!currentImageSrc) return showStatus('Please upload a file first.', true);
-        if (names.length === 0) return showStatus('Please paste at least one name.', true);
-        
-        if (names.length > 15) {
-            return showStatus('For sharing, please use max 15 names. Use Auto-Save for longer lists.', true);
-        }
+        if (!currentImageSrc) return showStatus('Please upload a file first.');
+        if (names.length === 0) return showStatus('Please paste at least one name.');
+        if (names.length > 15) return showStatus('Max 15 names for sharing.');
 
         shareAllBtn.disabled = true;
-        downloadAllBtn.disabled = true;
-
         try {
-            if (document.fonts) await document.fonts.ready;
             const files = [];
-
             for (let i = 0; i < names.length; i++) {
-                shareAllBtn.textContent = `⏳ Rendering ${i + 1} / ${names.length}...`;
+                shareAllBtn.textContent = `⏳ Rendering ${i + 1}/${names.length}...`;
                 const blob = await generateBlob(names[i]);
-                const file = new File([blob], `Invitation-${i}.png`, { type: 'image/png' });
-                files.push(file);
+                files.push(new File([blob], `Invitation-${i}.png`, { type: 'image/png' }));
             }
-
             shareAllBtn.textContent = `📱 Opening Share...`;
-
+            
             if (navigator.canShare && navigator.canShare({ files: files })) {
-                await navigator.share({
-                    files: files,
-                    title: 'Invitations',
-                    text: 'Here are your invitations!'
-                });
-                showStatus('Opened sharing menu.');
+                await navigator.share({ files: files, title: 'Invitations' });
+                showStatus('Shared successfully!', false);
             } else {
-                showStatus('Your device does not support sharing multiple images.', true);
+                showStatus('Your phone does not support sharing multiple images.');
             }
-
         } catch (err) {
-            if (err.name !== 'AbortError') {
-                console.error(err);
-                showStatus('Sharing failed.', true);
-            }
+            if (err.name !== 'AbortError') showStatus('Sharing failed.');
         } finally {
             shareAllBtn.disabled = false;
-            downloadAllBtn.disabled = false;
-            shareAllBtn.textContent = '📱 Share All to WhatsApp';
-            updatePreview(batchNamesInput.value.split('\n')[0]);
+            shareAllBtn.textContent = '📱 Share All';
+            updatePreview(guestNameInput.value);
         }
     });
 
-    updatePreview();
+    // Initialize
+    updatePreview(guestNameInput.value);
 })();
 </script>
 
