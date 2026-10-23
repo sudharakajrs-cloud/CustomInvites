@@ -206,7 +206,7 @@ button:disabled { opacity: .6; cursor: wait; }
 
         <div class="form-group">
             <label>Preview Name</label>
-            <input type="text" id="guestName"  placeholder="Type to preview" autocomplete="off">
+            <input type="text" id="guestName" value="Mr. & Mrs. Smith" placeholder="Type to preview" autocomplete="off">
         </div>
 
         <div class="row">
@@ -246,7 +246,8 @@ button:disabled { opacity: .6; cursor: wait; }
 
         <div class="buttons" style="margin-top: 10px;">
             <button type="button" id="downloadBtn">⬇️ Download Single Image</button>
-            <button type="button" class="whatsapp" id="shareBtn">📱 Share Single Image</button>
+            <!-- Renamed button to "Share Image" -->
+            <button type="button" id="shareBtn" style="background: #0463c9;">📤 Share Image</button>
         </div>
 
         <p id="status" role="status"></p>
@@ -261,7 +262,8 @@ button:disabled { opacity: .6; cursor: wait; }
             </div>
             <div class="buttons">
                 <button type="button" id="downloadAllBtn" style="background: #8b5a2b;">⬇️ Auto-Save All</button>
-                <button type="button" class="whatsapp" id="shareAllBtn" style="background: #128C7E;">📱 Share All</button>
+                <!-- Renamed button to "Share All" -->
+                <button type="button" id="shareAllBtn" style="background: #0463c9;">📤 Share All</button>
             </div>
         </div>
     </section>
@@ -410,7 +412,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         setTimeout(() => URL.revokeObjectURL(url), 1500);
     }
 
-    // 4. Single Download & Share
+    // 4. Single Download & Share (FIXED NATIVE SHARE)
     downloadBtn.addEventListener('click', async () => {
         if (!currentImageSrc) return showStatus('Please upload a file first.');
         const name = guestNameInput.value.trim();
@@ -442,23 +444,25 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
             const blob = await generateBlob(name);
             const file = new File([blob], `Invitation-${name}.png`, { type: 'image/png' });
 
+            // NATIVE SHARE (Opens your phone's actual share menu)
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({ files: [file], title: 'Invitation' });
                 showStatus('Shared successfully!', false);
             } else {
+                // Fallback for computers
                 saveBlob(blob, `Invitation-${name}.png`);
-                showStatus('Sharing not supported. Image downloaded instead.', false);
+                showStatus('Sharing not supported on this device. Image downloaded instead.', false);
             }
         } catch (err) {
             if (err.name !== 'AbortError') showStatus('Sharing failed.');
         } finally {
             shareBtn.disabled = false;
-            shareBtn.textContent = '📱 Share Single Image';
+            shareBtn.textContent = '📤 Share Image';
             updatePreview(guestNameInput.value);
         }
     });
 
-    // 5. Batch Process
+    // 5. Batch Process (FIXED NATIVE SHARE ALL)
     downloadAllBtn.addEventListener('click', async () => {
         const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
         if (!currentImageSrc) return showStatus('Please upload a file first.');
@@ -496,19 +500,20 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
                 const blob = await generateBlob(names[i]);
                 files.push(new File([blob], `Invitation-${i}.png`, { type: 'image/png' }));
             }
-            shareAllBtn.textContent = `📱 Opening Share...`;
+            shareAllBtn.textContent = `📤 Opening Share...`;
             
+            // NATIVE SHARE (Opens your phone's actual share menu)
             if (navigator.canShare && navigator.canShare({ files: files })) {
                 await navigator.share({ files: files, title: 'Invitations' });
                 showStatus('Shared successfully!', false);
             } else {
-                showStatus('Your phone does not support sharing multiple images.');
+                showStatus('Your phone does not support sharing multiple images.', true);
             }
         } catch (err) {
             if (err.name !== 'AbortError') showStatus('Sharing failed.');
         } finally {
             shareAllBtn.disabled = false;
-            shareAllBtn.textContent = '📱 Share All';
+            shareAllBtn.textContent = '📤 Share All';
             updatePreview(guestNameInput.value);
         }
     });
