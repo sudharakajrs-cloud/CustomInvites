@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Invitation Creator</title>
+<title>Custom Invites</title>
 
 <!-- Load Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Great+Vibes&family=Playfair+Display:wght@600&family=Parisienne&family=Dancing+Script:wght@600&family=Alex+Brush&family=Tangerine:wght@700&family=Cinzel:wght@600&family=Lora:ital,wght@0,600;1,600&family=Montserrat:wght@500&family=Sacramento&family=Pinyon+Script&family=Crimson+Text:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Bebas+Neue&family=Cormorant+Garamond:wght@600&family=Great+Vibes&family=Parisienne&family=Dancing+Script:wght@600&family=Alex+Brush&family=Tangerine:wght@700&family=Cinzel:wght@600&family=Lora:ital,wght@0,600;1,600&family=Montserrat:wght@500&family=Sacramento&family=Pinyon+Script&family=Crimson+Text:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <!-- Load html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -66,10 +66,24 @@ body {
     max-width: 1100px; width: 100%; margin: 0 auto; padding: 20px;
 }
 
-.header { text-align: center; margin-bottom: 20px; }
+/* ==================== HEADER ==================== */
+.header { text-align: center; margin-bottom: 25px; }
 .header h1 {
-    font-family: 'Great Vibes', cursive; font-size: 42px; color: #ffffff;
-    margin: 0 0 5px 0; font-weight: normal; text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-family: 'Playfair Display', serif;
+    font-size: 38px; 
+    color: #ffffff;
+    margin: 0 0 8px 0; 
+    font-weight: 700; 
+    letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.header p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 /* ==================== PREVIEW (STICKY ON MOBILE) ==================== */
@@ -149,6 +163,7 @@ button:disabled { opacity: .6; cursor: wait; }
     .card-wrapper { max-width: 100%; }
     .editor-panel { grid-column: 1; grid-row: 2; }
     .footer { grid-column: 1 / -1; }
+    .header h1 { font-size: 48px; }
 }
 </style>
 </head>
@@ -162,7 +177,8 @@ button:disabled { opacity: .6; cursor: wait; }
 <div class="app-wrapper">
     
     <div class="header">
-        <h1>Invitation Creator</h1>
+        <h1>Custom Invites</h1>
+        <p>Create beautiful personalized invitations</p>
     </div>
 
     <!-- STICKY PREVIEW (Mobile stays at top) -->
@@ -224,6 +240,7 @@ button:disabled { opacity: .6; cursor: wait; }
                 <option value="'Sacramento', cursive">Sacramento</option>
                 <option value="'Dancing Script', cursive">Dancing Script</option>
                 <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Bebas Neue', sans-serif">Bebas Neue (Chicago)</option>
             </select>
         </div>
 
@@ -324,7 +341,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         updatePreview(guestNameInput.value);
     }
 
-    // 2. Update Preview (Applies the design)
+    // 2. Update Preview
     function updatePreview(nameToDisplay) {
         document.getElementById('posValue').textContent = posSlider.value + '%';
         document.getElementById('sizeValue').textContent = sizeSlider.value + '%';
@@ -338,7 +355,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
             return;
         }
 
-        nameOverlay.textContent = nameToDisplay.trim().toUpperCase();
+        nameOverlay.textContent = nameToDisplay.trim(); 
         nameOverlay.style.display = 'block';
 
         const cardWidth = cardWrapper.clientWidth;
@@ -367,9 +384,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         document.fonts.ready.then(() => updatePreview(guestNameInput.value));
     }
 
-    // 3. Generate Image (Applies the exact current settings)
+    // 3. Generate Image
     async function generateBlob(name) {
-        updatePreview(name); // Force render the specific name
+        updatePreview(name);
         await new Promise(r => setTimeout(r, 150)); 
         
         const canvas = await html2canvas(cardWrapper, {
@@ -441,7 +458,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         }
     });
 
-    // 5. Batch Process (Applies current design to all)
+    // 5. Batch Process
     downloadAllBtn.addEventListener('click', async () => {
         const names = batchNamesInput.value.split('\n').map(n => n.trim()).filter(n => n);
         if (!currentImageSrc) return showStatus('Please upload a file first.');
